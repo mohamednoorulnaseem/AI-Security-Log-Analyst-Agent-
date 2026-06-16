@@ -1,0 +1,50 @@
+# ============================================================
+# LogSentinel AI — Dependencies
+# ============================================================
+# Pin major.minor to avoid breaking changes in CI.
+# Patch versions float so security fixes land automatically.
+
+# --- Core Framework ---
+fastapi==0.115.12
+uvicorn[standard]==0.34.3
+python-multipart==0.0.20          # File upload support for FastAPI
+
+# --- LLM & Agent ---
+langchain==0.3.25
+langchain-openai==0.3.18
+langchain-community==0.3.24
+langchain-chroma==0.2.4
+openai==1.82.0
+
+# --- Vector Store ---
+chromadb==1.0.12
+
+# --- Embeddings ---
+# Uses OpenAI text-embedding-3-small via langchain-openai
+
+# --- Database ---
+sqlalchemy==2.0.41
+asyncpg==0.31.0                   # Async PostgreSQL driver
+psycopg2-binary==2.9.10           # Sync PostgreSQL driver (for scripts/migrations)
+alembic==1.16.2                   # Database migrations
+
+# --- Dashboard ---
+streamlit==1.45.1
+requests==2.32.3                  # Dashboard → API communication
+
+# --- Data & Parsing ---
+python-dateutil==2.9.0.post0      # Robust date parsing for log timestamps
+pydantic==2.11.4
+pydantic-settings==2.9.1          # .env loading with type safety
+
+# --- Logging & Monitoring ---
+structlog==25.4.0                 # Structured JSON logging
+
+# --- Testing ---
+pytest==8.4.1
+pytest-asyncio==1.0.0
+aiosqlite==0.21.0
+httpx==0.28.1                     # Async test client for FastAPI
+
+# --- Dev Tools ---
+python-dotenv==1.1.0

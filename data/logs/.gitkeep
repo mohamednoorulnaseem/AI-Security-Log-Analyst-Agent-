@@ -1,0 +1,3 @@
+# This directory stores uploaded log files.
+# Files here are gitignored to avoid committing potentially sensitive data.
+# The directory must exist for the upload endpoint to work.

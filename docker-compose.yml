@@ -1,0 +1,98 @@
+# ============================================================
+# LogSentinel AI — Docker Compose
+# ============================================================
+# Start everything: docker-compose up --build
+# Stop everything:  docker-compose down
+# Reset data:       docker-compose down -v
+
+version: "3.9"
+
+services:
+  # ── PostgreSQL ──────────────────────────────────────────────
+  # Stores analysis reports, query logs, and run metrics.
+  # Data persists in a named volume so it survives container restarts.
+  postgres:
+    image: postgres:16-alpine
+    container_name: logsentinel-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-logsentinel}
+      POSTGRES_USER: ${POSTGRES_USER:-logsentinel_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-this-in-production}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-logsentinel_user} -d ${POSTGRES_DB:-logsentinel}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # ── ChromaDB ────────────────────────────────────────────────
+  # Vector store for embedded log chunks.
+  # Uses the official ChromaDB image with persistent storage.
+  chromadb:
+    image: chromadb/chroma:0.6.3
+    container_name: logsentinel-chromadb
+    ports:
+      - "${CHROMA_PORT:-8000}:8000"
+    volumes:
+      - chromadata:/chroma/chroma
+    environment:
+      - IS_PERSISTENT=TRUE
+      - ANONYMIZED_TELEMETRY=FALSE
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/heartbeat"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # ── FastAPI Application ─────────────────────────────────────
+  # The core API server: log ingestion, agent analysis, report retrieval.
+  # Waits for PostgreSQL and ChromaDB to be healthy before starting.
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.app
+    container_name: logsentinel-app
+    ports:
+      - "${API_PORT:-8080}:8080"
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_HOST=postgres
+      - CHROMA_HOST=chromadb
+    depends_on:
+      postgres:
+        condition: service_healthy
+      chromadb:
+        condition: service_healthy
+    volumes:
+      - ./data/logs:/app/data/logs
+    restart: unless-stopped
+
+  # ── Streamlit Dashboard ─────────────────────────────────────
+  # Web UI for uploading logs, triggering analysis, viewing reports.
+  # Talks to the FastAPI service over the Docker network.
+  dashboard:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.dashboard
+    container_name: logsentinel-dashboard
+    ports:
+      - "${DASHBOARD_PORT:-8501}:8501"
+    env_file:
+      - .env
+    environment:
+      - API_BASE_URL=http://app:8080
+    depends_on:
+      - app
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+    driver: local
+  chromadata:
+    driver: local
