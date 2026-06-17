@@ -26,6 +26,7 @@ from chromadb.config import Settings as ChromaSettings
 from langchain_openai import OpenAIEmbeddings
 from langchain_chroma import Chroma
 
+from app.config import settings
 from app.ingestion.chunker import LogChunk
 
 logger = logging.getLogger(__name__)
@@ -67,11 +68,22 @@ class LogEmbedder:
         self._embedding_model = embedding_model
         self._collection_name = collection_name
 
-        # Initialize OpenAI embeddings via LangChain
-        self._embeddings = OpenAIEmbeddings(
-            model=embedding_model,
-            openai_api_key=openai_api_key,
-        )
+        # Initialize embeddings via LangChain (support local HuggingFace for Groq)
+        if (
+            (openai_api_key and openai_api_key.startswith("gsk_"))
+            or "groq" in settings.openai_api_base.lower()
+            or "all-minilm" in embedding_model.lower()
+        ):
+            from langchain_community.embeddings import HuggingFaceEmbeddings
+            self._embeddings = HuggingFaceEmbeddings(
+                model_name=embedding_model,
+            )
+            logger.info("embedder_using_local_huggingface: model=%s", embedding_model)
+        else:
+            self._embeddings = OpenAIEmbeddings(
+                model=embedding_model,
+                openai_api_key=openai_api_key,
+            )
 
         # Initialize ChromaDB client
         if chroma_host:

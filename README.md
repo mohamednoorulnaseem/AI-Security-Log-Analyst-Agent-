@@ -227,23 +227,23 @@ Evaluate agent capabilities against realistic security incidents using the bench
    ```
    *(Note: Add the `--mock` flag to run the benchmark suite completely offline using cached mock model outputs, protecting your token budget: `python scripts/benchmark.py --mock`)*
 
-#### Benchmark Evaluation Results (Offline Mock Mode)
+#### Benchmark Evaluation Results (Live Production Mode)
 
-The following table reflects the results of running the benchmark pipeline using the simulated offline evaluation mode (`--mock`):
+The following table reflects the real-world results of running the benchmark pipeline against live LLM (`gemini-2.5-flash`) and local embedding (`sentence-transformers/all-MiniLM-L6-v2`) models:
 
 | Attack Scenario | Target Threat IP | Ground Truth Severity | Agent Severity | IP Attribution | Latency (s) | Status |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **SSH Brute Force** | 203.0.113.42 | CRITICAL | CRITICAL | Match (203.0.113.42) | 1.56s | Detected |
-| **Privilege Escalation** | 203.0.113.42 | CRITICAL | CRITICAL | Match (203.0.113.42) | 1.82s | Detected |
-| **Port Scanning** | 45.33.32.156 | MEDIUM | MEDIUM | Match (45.33.32.156) | 2.33s | Detected |
-| **SQL Injection Attempt** | 198.51.100.77 | HIGH | HIGH | Match (198.51.100.77) | 1.73s | Detected |
+| **SSH Brute Force** | 203.0.113.42 | CRITICAL | CRITICAL | Match (203.0.113.42) | 40.62s | Detected |
+| **Privilege Escalation** | 203.0.113.42 | CRITICAL | CRITICAL | Match (203.0.113.42) | 47.01s | Detected |
+| **Port Scanning** | 45.33.32.156 | MEDIUM | MEDIUM | Match (45.33.32.156) | 30.01s | Detected |
+| **SQL Injection Attempt** | 198.51.100.77 | HIGH | CRITICAL | Match (198.51.100.77) | 36.24s | Detected |
 
 **Summary Metrics:**
 - **Detection Rate (TPR)**: 100% (4/4 planted scenarios detected)
 - **Type Classification Accuracy**: 100%
-- **Severity Calibration**: 100% exact match
+- **Severity Calibration**: 75% exact match (The agent rated SQL Injection as `CRITICAL` instead of the target `HIGH` because the SQLi payloads targeted a high-value database endpoint and triggered extensive web error status codes, which is a reasonable escalation).
 - **IP Attribution Accuracy**: 100%
-- **Average Analysis Latency**: 1.86s
+- **Average Analysis Latency**: 38.47s
 - **Total Log Lines Evaluated**: 504 lines
 
 ---

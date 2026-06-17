@@ -66,11 +66,24 @@ class SecurityAnalystAgent:
             )
 
         # Initialize core LLM
-        self.llm = ChatOpenAI(
-            model=self.model_name,
-            openai_api_key=self.openai_api_key,
-            temperature=0.0,
-        )
+        if (
+            self.model_name.startswith("gemini-")
+            or (self.openai_api_key and self.openai_api_key.startswith("AIzaSy"))
+            or "gemini" in settings.openai_api_base.lower()
+        ):
+            from langchain_google_genai import ChatGoogleGenerativeAI
+            self.llm = ChatGoogleGenerativeAI(
+                model=self.model_name,
+                google_api_key=self.openai_api_key,
+                temperature=0.0,
+            )
+        else:
+            self.llm = ChatOpenAI(
+                model=self.model_name,
+                openai_api_key=self.openai_api_key,
+                base_url=settings.openai_api_base,
+                temperature=0.0,
+            )
 
         # Bind tools to the LLM
         self.tools = get_agent_tools(self.embedder)

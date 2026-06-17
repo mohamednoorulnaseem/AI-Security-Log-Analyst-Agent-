@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     openai_embedding_model: str = Field(
         "text-embedding-3-small", description="Embedding model for log chunks"
     )
+    openai_api_base: str = Field("https://api.openai.com/v1", description="OpenAI API base URL (custom base e.g. for Groq)")
 
     # ── PostgreSQL ────────────────────────────────────────────
     postgres_host: str = Field("localhost")
