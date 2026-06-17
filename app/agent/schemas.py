@@ -131,7 +131,10 @@ class AnalysisRequest(BaseModel):
         default=None,
         description="Filter by log source: 'apache', 'auth', 'syslog', or None for all"
     )
+    # NOTE: max_chunks is accepted by the API but not yet wired to the
+    # agent's tool retrieval limits. Each tool uses its own hardcoded limit.
+    # Kept in the schema to avoid breaking the dashboard UI slider.
     max_chunks: int = Field(
         default=10,
-        description="Maximum number of log chunks to retrieve for analysis"
+        description="Maximum number of log chunks to retrieve for analysis (not yet enforced by agent)"
     )
