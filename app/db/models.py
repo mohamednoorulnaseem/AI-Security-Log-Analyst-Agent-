@@ -32,7 +32,7 @@ class IncidentReportModel(Base):
     )
     created_at: Mapped[datetime.datetime] = mapped_column(
         DateTime(timezone=True),
-        default=datetime.datetime.utcnow,
+        default=lambda: datetime.datetime.now(datetime.UTC),
         nullable=False,
     )
     summary: Mapped[str] = mapped_column(Text, nullable=False)
@@ -69,7 +69,7 @@ class RawAnalysisModel(Base):
     )
     created_at: Mapped[datetime.datetime] = mapped_column(
         DateTime(timezone=True),
-        default=datetime.datetime.utcnow,
+        default=lambda: datetime.datetime.now(datetime.UTC),
         nullable=False,
     )
     query: Mapped[str] = mapped_column(Text, nullable=False)

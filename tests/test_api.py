@@ -184,7 +184,7 @@ def test_list_reports_success(MockRepository, client, mock_db_session):
         timeline=[],
         recommended_action="none",
         confidence_score=0.5,
-        created_at=datetime.datetime.utcnow(),
+        created_at=datetime.datetime.now(datetime.UTC),
     )
 
     MockRepository.list_reports = AsyncMock(return_value=[mock_report])
@@ -210,7 +210,7 @@ def test_get_report_by_id_success(MockRepository, client, mock_db_session):
         timeline=[],
         recommended_action="isolate",
         confidence_score=0.8,
-        created_at=datetime.datetime.utcnow(),
+        created_at=datetime.datetime.now(datetime.UTC),
     )
     MockRepository.get_report_by_id = AsyncMock(return_value=mock_report)
 
@@ -235,7 +235,7 @@ def test_get_report_analyses_history_success(MockRepository, client, mock_db_ses
         timeline=[],
         recommended_action="block",
         confidence_score=0.9,
-        created_at=datetime.datetime.utcnow(),
+        created_at=datetime.datetime.now(datetime.UTC),
     )
     MockRepository.get_report_by_id = AsyncMock(return_value=mock_report)
 
@@ -250,7 +250,7 @@ def test_get_report_analyses_history_success(MockRepository, client, mock_db_ses
         end_time=None,
         log_source="syslog",
         duration_seconds=1.5,
-        created_at=datetime.datetime.utcnow(),
+        created_at=datetime.datetime.now(datetime.UTC),
     )
 
     mock_result = MagicMock()
