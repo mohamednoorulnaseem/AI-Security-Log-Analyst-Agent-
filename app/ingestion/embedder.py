@@ -272,13 +272,14 @@ class LogEmbedder:
 
     def get_chunks_by_metadata(
         self,
-        filter_dict: dict,
+        filter_dict: Optional[dict] = None,
         limit: int = 10,
     ) -> list[dict]:
         """Retrieve log chunks matching a specific metadata filter without similarity search.
 
         Args:
-            filter_dict: ChromaDB metadata filter (e.g. {"log_source": "auth"})
+            filter_dict: ChromaDB metadata filter (e.g. {"log_source": "auth"}).
+                         Pass None to retrieve chunks without filtering.
             limit: Maximum number of results to return
 
         Returns:
@@ -288,10 +289,10 @@ class LogEmbedder:
             collection = self._chroma_client.get_collection(
                 name=self._collection_name,
             )
-            results = collection.get(
-                where=filter_dict,
-                limit=limit,
-            )
+            get_kwargs = {"limit": limit}
+            if filter_dict:
+                get_kwargs["where"] = filter_dict
+            results = collection.get(**get_kwargs)
             formatted = []
             if results and "documents" in results and results["documents"]:
                 for i in range(len(results["documents"])):

@@ -75,7 +75,7 @@ def get_agent_tools(embedder: LogEmbedder) -> list:
             A formatted string containing the log chunks and metadata within the time range.
         """
         # Retrieve chunks matching metadata log_source
-        filter_dict = {"log_source": log_source} if log_source else {}
+        filter_dict = {"log_source": log_source} if log_source else None
         # Fetch a reasonable upper bound of chunks to filter in Python
         results = embedder.get_chunks_by_metadata(
             filter_dict=filter_dict, limit=100
