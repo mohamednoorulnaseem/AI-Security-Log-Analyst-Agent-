@@ -5,7 +5,7 @@
 # Patch versions float so security fixes land automatically.
 
 # --- Core Framework ---
-fastapi==0.115.12
+fastapi==0.115.9
 uvicorn[standard]==0.34.3
 python-multipart==0.0.20          # File upload support for FastAPI
 
