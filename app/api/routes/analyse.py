@@ -6,8 +6,11 @@ Triggers the LLM agent to analyse log chunks within a time range.
 Built in Phase 7.
 """
 
+import logging
 import time
 from typing import Any
+
+logger = logging.getLogger(__name__)
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -106,9 +109,6 @@ async def trigger_log_analysis(
         )
     except Exception as e:
         # Log error but don't block the API from returning the generated report to the user
-        import logging
-
-        logger = logging.getLogger(__name__)
         logger.error("api_failed_to_persist_analysis_run: %s", str(e))
 
     return report
