@@ -29,7 +29,7 @@ class HealthResponse(BaseModel):
     status: str = Field(..., description="Overall health status: 'healthy' or 'unhealthy'")
     postgres: str = Field(..., description="PostgreSQL database health status: 'connected' or 'disconnected'")
     chromadb: str = Field(..., description="ChromaDB vector store health status: 'connected' or 'disconnected'")
-    openai: str = Field(..., description="OpenAI API health status: 'reachable' or 'unreachable'")
+    openai: str = Field(..., description="OpenAI API key status: 'configured' or 'not_configured'")
 
 
 class IncidentReportResponse(BaseModel):

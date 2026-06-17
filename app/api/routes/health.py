@@ -48,16 +48,19 @@ async def health_check(
     except Exception:
         chromadb_status = "disconnected"
 
-    # 3. Check OpenAI status
-    openai_status = "reachable"
+    # 3. Check OpenAI configuration
+    # NOTE: This only checks if an API key is configured, not whether it is
+    # valid or whether OpenAI's API is reachable. A real connectivity check
+    # would require an API call (and cost money on every health check).
+    openai_status = "configured"
     if not settings.openai_api_key:
-        openai_status = "unreachable"
+        openai_status = "not_configured"
 
     overall_status = (
         "healthy"
         if postgres_status == "connected"
         and chromadb_status == "connected"
-        and openai_status == "reachable"
+        and openai_status == "configured"
         else "unhealthy"
     )
 
