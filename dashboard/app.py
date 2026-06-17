@@ -64,7 +64,7 @@ if is_healthy:
     # Detail connections
     db_ok = health.get("postgres") == "connected"
     chroma_ok = health.get("chromadb") == "connected"
-    openai_ok = health.get("openai") == "reachable"
+    openai_ok = health.get("openai") == "configured"
     
     col1, col2 = st.sidebar.columns(2)
     with col1:
@@ -75,7 +75,7 @@ if is_healthy:
         st.markdown(f"{'🟢 Connected' if chroma_ok else '🔴 Offline'}")
     with col2:
         st.caption("OpenAI API")
-        st.markdown(f"{'🟢 Reachable' if openai_ok else '🔴 Offline'}")
+        st.markdown(f"{'🟢 Configured' if openai_ok else '🔴 Not Configured'}")
 else:
     err_msg = health.get("error", "Unreachable")
     st.sidebar.markdown(
