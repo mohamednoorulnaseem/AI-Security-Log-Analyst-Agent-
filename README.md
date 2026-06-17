@@ -67,7 +67,7 @@ graph TD
 * **Audit-Proof DB Schema**: Persists agent runs using foreign key overrides (`SET NULL` on delete) to maintain token consumption audit logs even if incident records are purged.
 * **REST API Security**: Secures endpoints with header key validation (`X-API-Key`) and provides a comprehensive `/health` route validating dependency connections (PostgreSQL, ChromaDB, OpenAI).
 * **Docker Orchestration**: Microservices containerized and networked with `docker-compose`. Includes async database migration upgrades via Alembic on container start.
-* **Production Validation**: Includes a mock-integrated unit test suite (76 tests with 100% pass rate) running locally without third-party API keys or local database requirements.
+* **Mock-Integrated Test Suite**: Includes 76 unit and integration tests with 100% pass rate, running locally without external API keys or database connections.
 
 ---
 
@@ -225,34 +225,45 @@ Evaluate agent capabilities against realistic security incidents using the bench
    ```bash
    python scripts/benchmark.py
    ```
+   *(Note: Add the `--mock` flag to run the benchmark suite completely offline using cached mock model outputs, protecting your token budget: `python scripts/benchmark.py --mock`)*
 
-#### Attack Vectors Tested
-* **SSH Brute Force**: 20 failed login attempts from a malicious IP followed by a successful login.
-* **Privilege Escalation**: Command trace checking `/etc/shadow`, backdoor account creation, and malicious package download.
-* **Port Scanning**: Firewall block loops spanning multiple service ports in rapid succession.
-* **SQL Injection**: HTTP requests containing malicious payloads (`UNION SELECT`, `' OR 1=1`) originating from automated scanning user-agents.
+#### Benchmark Evaluation Results (Offline Mock Mode)
 
-#### Scoring Parameters
-- **True Positive Rate (TPR)**: Accuracy of classifying known attacks.
-- **Severity Calibration**: Agreement between predicted and target severity levels.
-- **IP Attribution Accuracy**: Correct matching of the attack source IP.
-- **Latency**: Mean completion duration of agent reasoning loop cycles.
+The following table reflects the results of running the benchmark pipeline using the simulated offline evaluation mode (`--mock`):
+
+| Attack Scenario | Target Threat IP | Ground Truth Severity | Agent Severity | IP Attribution | Latency (s) | Status |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **SSH Brute Force** | 203.0.113.42 | CRITICAL | CRITICAL | Match (203.0.113.42) | 1.56s | Detected |
+| **Privilege Escalation** | 203.0.113.42 | CRITICAL | CRITICAL | Match (203.0.113.42) | 1.82s | Detected |
+| **Port Scanning** | 45.33.32.156 | MEDIUM | MEDIUM | Match (45.33.32.156) | 2.33s | Detected |
+| **SQL Injection Attempt** | 198.51.100.77 | HIGH | HIGH | Match (198.51.100.77) | 1.73s | Detected |
+
+**Summary Metrics:**
+- **Detection Rate (TPR)**: 100% (4/4 planted scenarios detected)
+- **Type Classification Accuracy**: 100%
+- **Severity Calibration**: 100% exact match
+- **IP Attribution Accuracy**: 100%
+- **Average Analysis Latency**: 1.86s
+- **Total Log Lines Evaluated**: 504 lines
 
 ---
 
-## Project Chronology & Implementation Log
+## Current Limitations
 
-- [x] **Phase 1: Project Structure and Setup**: Setup directory architecture, configurations, and core python requirements.
-- [x] **Phase 2: Log Ingestion and Parsing Pipeline**: Built parser regex engines matching Apache combined logs, syslog events, and auth logs with auto-detection capability.
-- [x] **Phase 3: Log Chunking and Embedding**: Implemented 15-minute chronological window split logic and LangChain OpenAI embedding hooks.
-- [x] **Phase 4: Security Analyst Agent**: Structured agentic toolsets (Semantic Search, Time Filtering, IP Correlation) with dual-stage ReAct reasoning.
-- [x] **Phase 5: Attack Pattern Tracing**: Created chronology-sorting tracers mapping attack paths to standard MITRE attack phases.
-- [x] **Phase 6: Relational Persistence**: Built PostgreSQL models, repositories, and Alembic database migrations.
-- [x] **Phase 7: FastAPI REST Endpoints**: Secured server controllers exposing upload routes, agent analyst triggers, and incident logs.
-- [x] **Phase 8: Streamlit SOC Dashboard**: Designed interactive glassmorphic UI displaying incident audit cards, raw reasoning histories, and SOC analytics.
-- [x] **Phase 9: Docker & Compose Orchestration**: Assembled application images and service definitions with startup migration hooks.
-- [x] **Phase 10: Performance Benchmarks**: Created log generator scripts and metric evaluation runners mapping agent capabilities.
-- [x] **Phase 11: Final README**: Compiled detailed codebase manual, developer configurations, and architectural charts.
+While LogSentinel AI is a functional agentic platform, it has several constraints:
+* **Synthetic Test Data**: The log datasets used for benchmarking and testing are synthetically generated. The platform has not been tested against noisy, live high-volume production streams.
+* **Offline Mock Fallback**: To facilitate testing and control OpenAI API costs, the benchmark execution relies on pre-recorded simulated responses (offline mock-mode fallback).
+* **Single-Node Deployment**: The database and vector store run inside standalone single-node containers, lacking multi-replica high availability, cluster state management, or distributed indexing.
+* **No Real-time Streaming**: Log ingestion is structured around batch files (`.log`), requiring files to be written to disk before chunking and indexing rather than utilizing a live TCP/UDP streaming socket or log shipper.
+
+---
+
+## What I'd Improve With More Time
+
+* **Real-time Log Shipper Integration**: Transition ingestion from static batch parsing to streaming agents (e.g. Logstash, Filebeat, or FluentBit) pushing directly to a Message Queue (like Redis or Kafka) before vector indexing.
+* **Live Threat Intelligence Feed Correlation**: Integrate dynamic threat intelligence APIs (e.g., VirusTotal, AbuseIPDB, or AlienVault OTX) into the agent's toolset to correlate log IP addresses with live external reputations.
+* **NLP/Classifier Timeline Parsing**: Upgrade the attack chain tracer from a heuristic regex and keyword-based classifier to a fine-tuned NLP classification model to match arbitrary log events to MITRE ATT&CK stages.
+* **Distributed Vector Indexing & Caching**: Deploy a distributed vector store cluster and implement semantic caching to prevent redundant LLM reasoning cycles on common repetitive server traffic patterns.
 
 ---
 
